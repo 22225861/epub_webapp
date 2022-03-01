@@ -20,6 +20,7 @@
   </transition>
     <ebook-setting-font></ebook-setting-font>
     <ebook-setting-font-popup></ebook-setting-font-popup>
+    <ebook-setting-theme></ebook-setting-theme>
   </div>
 </template>
 
@@ -27,11 +28,13 @@
 import { ebookMixin } from '@/utils/mixin'
 import EbookSettingFont from '@/components/ebook/EbookSettingFont'
 import EbookSettingFontPopup from '@/components/ebook/EbookSettingFontPopup'
+import EbookSettingTheme from '@/components/ebook/EbookSettingTheme'
 export default {
   name: 'EbookMenu',
   components: {
     EbookSettingFont,
-    EbookSettingFontPopup
+    EbookSettingFontPopup,
+    EbookSettingTheme
   },
 
   mixins: [ebookMixin],
