@@ -7,7 +7,15 @@
 <script>
 import { ebookMixin } from '@/utils/mixin'
 import Epub from 'epubjs'
-import { getFontFamily, getFontSize, getTheme, saveFontFamily, saveFontSize, saveTheme } from '@/utils/localStorage'
+import {
+  getFontFamily,
+  getFontSize,
+  getLocation,
+  getTheme,
+  saveFontFamily,
+  saveFontSize,
+  saveTheme
+} from '@/utils/localStorage'
 
 global.ePub = Epub
 export default {
@@ -16,13 +24,17 @@ export default {
   methods: {
     prevPage () {
       if (this.rendition) {
-        this.rendition.prev()
+        this.rendition.prev().then(() => {
+          this.refreshLocation()
+        })
         this.hideTitleAndMenu()
       }
     },
     nextPage () {
       if (this.rendition) {
-        this.rendition.next()
+        this.rendition.next().then(() => {
+          this.refreshLocation()
+        })
         this.hideTitleAndMenu()
       }
     },
@@ -68,24 +80,35 @@ export default {
       })
       this.rendition.themes.select(defaultTheme)
     },
-    initEpub () {
-      // 192.168.43.110为本机地址 8090则为nginx服务器设置
-      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
-      this.book = new Epub(url)
-      this.setCurrentBook(this.book)
+    initRendition () {
       this.rendition = this.book.renderTo('read', {
         width: window.innerWidth,
         height: window.innerHeight
         // 兼容iOS
         // method: 'default'
       })
-      this.rendition.display().then(() => {
-        this.initFontSize() // 字体大小
-        this.initFontFamily() // 字体
-        this.initTheme() // 背景色
-        this.innitGlobalStyle()
+        const location = getLocation(this.fileName)
+          this.display(location, () => {
+          this.initFontSize() // 字体大小
+          this.initFontFamily() // 字体
+          this.initTheme() // 背景色
+          this.innitGlobalStyle() // 全局样式
+         // this.refreshLocation()
+        })
+      this.rendition.hooks.content.register(contents => {
+        Promise.all(
+          [
+            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`),
+            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/cabin.css`),
+            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`),
+            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`)
+          ]
+        ).then(() => {
+          console.log('字体加载完毕')
+        })
       })
-
+    },
+    initGesture () {
       this.rendition.on('touchstart', event => {
         this.touchStartX = event.changedTouches[0].clientX
         this.touchStartTime = event.timeStamp
@@ -103,18 +126,23 @@ export default {
         // event.preventDefault()
         event.stopPropagation()
       })
-      this.rendition.hooks.content.register(contents => {
-        Promise.all(
-          [
-            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`),
-            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/cabin.css`),
-            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`),
-            contents.addStylesheet(` ${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`)
-          ]
-        ).then(() => {
-          console.log('字体加载完毕')
-        })
+    },
+    initEpub () {
+      // 192.168.43.110为本机地址 8090则为nginx服务器设置
+      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+      this.book = new Epub(url)
+      this.book.ready.then(() => { // 分页
+        // console.log(this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16)))
+        return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
+      }).then(locations => {
+        console.log(locations)
+        this.setBookAvailable(true)
+        this.refreshLocation()
       })
+      this.setCurrentBook(this.book)
+      this.initRendition() // 显示图书信息操作
+      this.initGesture() // 手势操作
+      // this.refreshLocation()
     }
   },
   mounted () {
