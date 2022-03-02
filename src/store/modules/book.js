@@ -3,9 +3,9 @@ const book = {
     fileName: '',
     menuVisible: false,
     settingVisible: -1, // -1:不显示，0 :字号 2:进度 3:目录
-    defaultFontSize: 16,
-    currentBook: null,
-    defaultFontFamily: 'Default',
+    defaultFontSize: 16, // 默认字号
+    currentBook: null, // 当前书
+    defaultFontFamily: 'Default', // 默认字体
     fontFamilyVisible: false,
     defaultTheme: 'Default',
     bookAvailable: false,

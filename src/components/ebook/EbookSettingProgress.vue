@@ -1,35 +1,4 @@
 <template>
-<!--  <transition name="slide-up">-->
-<!--    <div class="setting-wrapper" v-show="menuVisible && settingVisible === 2">-->
-<!--      <div class="setting-progress">-->
-<!--        <div class="read-time-wrapper">-->
-<!--          <span class="read-time-text">{{getReadTime()}}</span>-->
-<!--          <span class="icon-forward"></span>-->
-<!--        </div>-->
-<!--        <div class="progress-wrapper">-->
-<!--          <div class="progress-icon-wrapper">-->
-<!--            <span class="icon-back" @click="prevSection()"></span>-->
-<!--          </div>-->
-<!--          <input class="progress" type="range"-->
-<!--                 max="100"-->
-<!--                 min="0"-->
-<!--                 step="1"-->
-<!--                 @input="onProgressInput($event.target.value)"-->
-<!--                 @change="onProgressChange($event.target.value)"-->
-<!--                 :value="progress"-->
-<!--                 :disabled="!bookAvailable"-->
-<!--                 ref="progress">-->
-<!--          <div class="progress-icon-wrapper" @click="nextSection()">-->
-<!--            <span class="icon-forward"></span>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <div class="text-wrapper">-->
-<!--          <span class="progress-section-text">{{getSectionName}}</span>-->
-<!--          <span class="progress-text">({{bookAvailable ? progress + '%' : $t('book.loading')}})</span>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </transition>-->
   <transition name="slide-up">
   <div class="setting-wrapper" v-show="menuVisible && settingVisible === 2">
   <div class="setting-progress" >
@@ -66,7 +35,6 @@
 
 <script>
 import { ebookMixin } from '@/utils/mixin'
-import { getReadTime } from '@/utils/localStorage'
 
 export default {
   name: 'EbookSettingProgress',
@@ -120,28 +88,6 @@ export default {
     },
     updateProgressBg () {
       this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`
-    },
-    getReadTimeText () {
-      return this.$t('book.haveRead').replace('$1', this.getReadTimeByMinute())
-    },
-    getReadTimeByMinute () {
-      const readTime = getReadTime(this.fileName)
-      if (!readTime) {
-        return 0
-      } else {
-        return Math.ceil(readTime / 60)
-      }
-    }
-  },
-  computed: {
-    // eslint-disable-next-line vue/return-in-computed-property
-    getSectionName () { // 获取章节名称
-      if (this.section) {
-        const sectionInfo = this.currentBook.section(this.section)
-        if (sectionInfo && sectionInfo.href) {
-          return this.currentBook.navigation.get(sectionInfo.href).label
-        }
-      }
     }
   },
   updated () {

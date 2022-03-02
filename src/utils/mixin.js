@@ -1,5 +1,5 @@
 import { mapActions, mapGetters } from 'vuex'
-import { addCss, removeAllCss, themeList } from '@/utils/book'
+import { addCss, removeAllCss, themeList, getReadTimeByMinute } from '@/utils/book'
 import { saveLocation } from '@/utils/localStorage'
 export const ebookMixin = {
   computed: {
@@ -31,6 +31,15 @@ export const ebookMixin = {
     ]),
     themeList () {
       return themeList(this)
+    },
+    getSectionName () { // 获取章节名称
+      // if (this.section) {
+      //   const sectionInfo = this.currentBook.section(this.section)
+      //   if (sectionInfo && sectionInfo.href && this.currentBook && this.currentBook.navigation) {
+      //     return this.currentBook.navigation.get(sectionInfo.href).label
+      //   }
+      // }
+      return this.section ? this.navigation[this.section].label : ''
     }
   },
   methods: {
@@ -60,7 +69,7 @@ export const ebookMixin = {
       'setIsBookmark',
       'setSpeakingIconBottom'
     ]),
-    innitGlobalStyle () {
+    initGlobalStyle () {
        removeAllCss()
       switch (this.defaultTheme) {
         case 'Default':
@@ -82,12 +91,14 @@ export const ebookMixin = {
     },
     refreshLocation () { // 实现上/下翻页进度条更新
       const currentLocation = this.currentBook.rendition.currentLocation()
-      const startCfi = currentLocation.start.cfi
-      console.log(startCfi)
-      const progress = this.currentBook.locations.percentageFromCfi(startCfi) // 获得一张的首字母占本书的的百分比
-      this.setProgress(Math.floor(progress * 100))
-      this.setSection(currentLocation.start.index)
-      saveLocation(this.fileName, startCfi)
+      if (currentLocation && currentLocation.start) {
+        const startCfi = currentLocation.start.cfi
+        console.log(startCfi)
+        const progress = this.currentBook.locations.percentageFromCfi(startCfi) // 获得一张的首字母占本书的的百分比
+        this.setProgress(Math.floor(progress * 100))
+        this.setSection(currentLocation.start.index)
+        saveLocation(this.fileName, startCfi)
+      }
     },
     display (target, cb) {
       if (target) {
@@ -101,6 +112,14 @@ export const ebookMixin = {
            if (cb) cb()
          })
       }
+    },
+    hideTitleAndMenu () {
+      this.setMenuVisible(false)
+      this.setSettingVisible(-1)
+      this.setFontFamilyVisible(false)
+    },
+    getReadTimeText () {
+      return this.$t('book.haveRead').replace('$1', getReadTimeByMinute(this.fileName))
     }
   }
 }
