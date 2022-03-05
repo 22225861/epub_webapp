@@ -7,7 +7,7 @@
       </div>
       <div class="right">
         <div class="icon-wrapper">
-          <span class="icon-shelf "></span>
+          <span class="icon-shelf " ></span>
         </div>
         <div class="icon-wrapper">
           <span class="icon-cart "></span>
@@ -27,7 +27,7 @@ export default {
   name: 'EbookTitle',
   methods: {
     back () {
-      console.log('back')
+     this.$router.go(-1)
     }
   },
   mixins: [ebookMixin]
@@ -43,7 +43,7 @@ export default {
   width: 100%;
   height: px2rem(48);
   display: flex;
-  z-index: 100;
+  z-index: 102;
   background-color: #fff;
   box-shadow: 0 px2rem(8) px2rem(8) rgba(0, 0, 0, .15);
   font-size: px2rem(20);

@@ -20,7 +20,26 @@ const routes = [
   },
   {
     path: '/store',
-    component: () => import('../views/store/index.vue')
+    component: () => import('../views/store/index'),
+     redirect: '/store/shelf',
+    children: [
+      {
+        path: 'shelf',
+        component: () => import('../views/store/StoreShelf')
+      },
+      {
+        path: 'home',
+        component: () => import('../views/store/StoreHome')
+      },
+      {
+        path: 'list',
+        component: () => import('../views/store/StoreList')
+      },
+      {
+        path: 'detail',
+        component: () => import('../views/store/StoreDetail')
+      }
+]
   }
 ]
 

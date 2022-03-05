@@ -159,7 +159,7 @@ export default {
         // method: 'default'
         // flow: 'scrolled' // 滚动浏览 使用鼠标滑轮可以滚动页面
       })
-        const location = getLocation(this.fileName)
+           const location = getLocation(this.fileName)
           this.display(location, () => {
           this.initFontSize() // 字体大小
           this.initFontFamily() // 字体
@@ -220,6 +220,8 @@ export default {
       })
     },
     initEpub () {
+      // this.fileName = this.$route.params.fileName.split('|').join('/')
+      // this.setFileName(this.fileName)
       const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
       this.book = new Epub(url)
       this.setCurrentBook(this.book)
@@ -239,7 +241,6 @@ export default {
       this.initEpub()
     })
   }
-
 }
 </script>
 

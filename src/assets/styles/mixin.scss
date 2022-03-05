@@ -1,3 +1,5 @@
+$animationTime: .2s;
+$animationType: linear;
 $ratio: 375 / 10;
 
 @function px2rem($px) {
@@ -108,6 +110,17 @@ $ratio: 375 / 10;
   overflow: hidden;
   text-overflow: ellipsis;
   overflow-wrap: break-word;
+}
+
+.icon{
+  color: #666666;
+  font-size: px2rem(16);
+}
+.title {
+  color: #666666;
+  font-size: px2rem(16);
+  font-weight: bold;
+
 }
 
 @mixin shelfImgHeight {
