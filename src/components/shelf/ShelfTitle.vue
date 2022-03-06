@@ -2,15 +2,18 @@
   <transition name="fade">
   <div class="shelf-title" v-show="shelfTitleVisible" :class="{'hide-shadow': ifHideShadow}">
     <div class="shelf-title-text-wrapper" >
-        <span class="shelf-title-text">{{$t('shelf.title')}}</span>
+        <span class="shelf-title-text">{{title}}</span>
         <span class="shelf-title-sub-text" v-show="isEditMode" >{{selectedText}}</span>
       </div>
-      <div class="shelf-title-btn-wrapper shelf-title-left" >
+      <div class="shelf-title-btn-wrapper shelf-title-left" v-if="showClear" >
         <span class="shelf-title-btn-text " @click="clearCache">{{$t('shelf.clearCache')}}</span>
       </div>
-      <div class="shelf-title-btn-wrapper shelf-title-right" >
+      <div class="shelf-title-btn-wrapper shelf-title-right" v-if="showEdit">
         <span class="shelf-title-btn-text" @click="onEditClick">{{isEditMode ? $t('shelf.cancel') : $t('shelf.edit')}}</span>
       </div>
+    <div class="shelf-title-btn-wrapper shelf-title-left"  v-if="showBack">
+      <span class="icon-back " @click="back"></span>
+    </div>
 <!--      <div class="btn-text-wrapper" >-->
 <!--        <span class="btn-text">{{$t('shelf.changeLanguage')}}0000</span>-->
 <!--      </div>-->
@@ -20,9 +23,11 @@
 <!--      <div class="btn-back-wrapper" >-->
 <!--        <span class="icon-back"></span>-->
 <!--      </div>-->
-<!--      <div class="btn-back-wrapper" >-->
-<!--        <span class="btn-text">{{$t('shelf.editGroup')}}</span>-->
-<!--      </div>-->
+      <div class="shelf-title-btn-wrapper" :class="{'shelf-title-left': changeGroupLeft, 'shelf-title-right': changeGroupRight}"
+      @click="changeGroup" v-if="showChangeGroup"
+      >
+        <span class="shelf-title-btn-text">{{$t('shelf.editGroup')}}</span>
+      </div>
 <!--      <popup ref="popup"-->
 <!--             :title="popupTitle"-->
 <!--             :thirdText="thirdText"-->
@@ -43,21 +48,124 @@
 <script>
 import { storeShelfMixin } from '@/utils/mixin'
 import { clearLocalForage } from '@/utils/localForage'
-import { clearLocalStorage } from '@/utils/localStorage'
+import { clearLocalStorage, saveBookShelf } from '@/utils/localStorage'
 export default {
   name: 'ShelfTitle',
   mixins: [storeShelfMixin],
-
+  props: {
+    title: String
+  },
   computed: {
     selectedText () {
       const selectedNumber = this.shelfSelected ? this.shelfSelected.length : 0
       return selectedNumber <= 0 ? this.$t('shelf.selectBook') : (selectedNumber === 1 ? this.$t('shelf.haveSelectedBook')
         .replace('$1', selectedNumber) : this.$t('shelf.haveSelectedBooks').replace('$1', selectedNumber))
+    },
+    showBack () {
+      return this.currentType === 2 && !this.isEditMode
+    },
+    showChangeGroup () {
+      return this.currentType === 2 && (this.isEditMode || this.emptyCategory)
+    },
+    showClear () {
+      return this.currentType === 1
+    },
+    showEdit () {
+      return this.currentType === 1 || !this.emptyCategory
+    },
+    emptyCategory () {
+      return !this.shelfCategory || !this.shelfCategory.itemList || this.shelfCategory.itemList.length === 0
+    },
+    changeGroupLeft () {
+      return !this.emptyCategory
+    },
+    changeGroupRight () {
+      return this.emptyCategory
+    },
+    popupCancelBtn () {
+      return this.createPopupBtn(this.$t('shelf.cancel'), () => {
+        this.hidePopup()
+      })
     }
   },
   methods: {
+    onComplete () {
+      this.hidePopup()
+       this.setShelfList(this.shelfList.filter(book => book.id !== this.shelfCategory.id)).then(() => {
+         saveBookShelf(this.shelfList)
+         this.$router.go(-1)
+       //  this.setIsEditMode(false)
+       })
+    },
+    deleteGroup () {
+      if (!this.emptyCategory) {
+        this.setShelfSelected(this.shelfCategory.itemList)
+        this.moveOutOfGroup(this.onComplete)
+      } else {
+        this.onComplete()
+      }
+    },
+    changeGroup () {
+      this.popupMenu = this.popup({
+        btn: [
+          this.createPopupBtn(this.$t('shelf.editGroupName'), () => {
+            this.changeGroupName()
+          }),
+          this.createPopupBtn(this.$t('shelf.deleteGroup'), () => {
+            this.showDeleteGroup()
+          }, 'danger'),
+          this.popupCancelBtn
+        ]
+      }).show()
+    },
+    hidePopup () {
+      this.popupMenu.hide()
+    },
+    createPopupBtn (text, onClick, type = 'normal') {
+      return {
+        text: text,
+        type: type,
+        click: onClick
+      }
+    },
+    showDeleteGroup () {
+      this.hidePopup()
+      setTimeout(() => {
+        this.popupMenu = this.popup({
+          title: this.$t('shelf.deleteGroupTitle'),
+          btn: [
+            this.createPopupBtn(this.$t('shelf.confirm'), () => {
+              this.deleteGroup()
+            }, 'danger'),
+            this.popupCancelBtn
+          ]
+        }).show()
+      }, 200)
+    },
+    changeGroupName () {
+      this.hidePopup()
+      this.dialog({
+        showNewGroup: true,
+        groupName: this.shelfCategory.title
+      }).show()
+    },
+    back () {
+      this.$router.go(-1)
+      this.setIsEditMode(false)
+    },
     onEditClick () {
-      this.setIsEditMode(!this.isEditMode)
+     this.setIsEditMode(!this.isEditMode)
+      if (!this.isEditMode) {
+        this.setShelfSelected([])
+        this.shelfList.forEach(item => {
+          item.selected = false
+          if (item.itemList) {
+            item.itemList.forEach(subItem => {
+              subItem.selected = false
+            })
+          }
+        })
+      }
     },
     clearCache () {
       clearLocalStorage()
@@ -127,6 +235,10 @@ export default {
       font-size: px2rem(14);
       color: #666;
     }
+      .icon-back {
+        font-size: px2rem(20);
+        color: #666;
+      }
       &.shelf-title-left{
         left: 0;
         padding-left: px2rem(15);

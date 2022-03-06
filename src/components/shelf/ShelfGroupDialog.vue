@@ -96,7 +96,7 @@
         this.$refs.dialog.hide()
         setTimeout(() => {
           this.ifNewGroup = false
-        }, 200)
+        }, 199)
       },
       onGroupClick (item) {
         if (item.edit && item.edit === 1) {

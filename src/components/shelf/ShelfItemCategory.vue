@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="shelf-item-category-bg" v-else>
-      <span class="icon-book2"></span>
+      <span class="icon-book2">20</span>
     </div>
   </div>
 </template>

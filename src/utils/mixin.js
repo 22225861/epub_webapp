@@ -204,6 +204,7 @@ export const storeShelfMixin = {
           removeAddFromShelf(this.shelfList), ...this.shelfSelected)))
         this.setShelfList(list).then(() => {
           this.simpleToast(this.$t('shelf.moveBookOutSuccess'))
+          this.onComplete()
           if (f) f()
         })
       })

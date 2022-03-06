@@ -28,12 +28,20 @@ const routes = [
         component: () => import('../views/store/StoreShelf')
       },
       {
+        path: 'category',
+        component: () => import('../views/store/StoreCategory.vue')
+      },
+      {
         path: 'home',
         component: () => import('../views/store/StoreHome')
       },
       {
         path: 'list',
         component: () => import('../views/store/StoreList')
+      },
+      {
+        path: 'speaking',
+        component: () => import('../views/store/StoreSpeaking')
       },
       {
         path: 'detail',
